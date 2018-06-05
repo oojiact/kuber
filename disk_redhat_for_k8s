@@ -1,0 +1,82 @@
+[root@k8s-master docker]# lvcreate -L 10G system -n docker
+  Logical volume "docker" created.
+
+[root@k8s-master docker]# lvs
+  LV     VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  audit  system -wi-ao----  4.00g                                                    
+  docker system -wi-a----- 10.00g                                                    
+  home   system -wi-ao----  4.00g                                                    
+  log    system -wi-ao----  4.00g                                                    
+  root   system -wi-ao----  8.00g                                                    
+  swap   system -wi-a-----  4.00g                                                    
+  tmp    system -wi-ao---- 10.00g                                                    
+  var    system -wi-ao----  4.00g  
+  
+  
+  
+ [root@k8s-master docker]# mkfs.xfs /dev/mapper/system-docker 
+meta-data=/dev/mapper/system-docker isize=512    agcount=4, agsize=655360 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=2621440, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+
+
+  mkdir /var/lib/docker
+  vi /etc/fstab
+  
+  /dev/mapper/system-root /                       xfs     defaults        1 1
+/dev/sda1 /boot                   xfs     defaults,nodev        1 2
+/dev/mapper/system-var  /var                    xfs     defaults,nodev,noexec,nosuid        0 0
+/dev/mapper/system-log  /var/log                xfs     defaults,nodev        0 0
+/dev/mapper/system-audit /var/log/audit          xfs     defaults,nodev        0 0
+/dev/mapper/system-swap swap                    swap    defaults        0 0
+/dev/system/home        /home   xfs     rw,nodev,nosuid        0 0
+/dev/system/tmp /tmp    xfs     rw,nodev,nosuid,noexec  0 0
+/tmp    /var/tmp        none    bind,rw 0 0
+tmpfs   /dev/shm        tmpfs   rw,nosuid,nodev,noexec  0 0
+/dev/mapper/system-docker       /var/lib/docker         xfs     defaults,nodev          0 0
+
+mount -a
+
+
+[root@k8s-master docker]# df -h
+Filesystem                 Size  Used Avail Use% Mounted on
+/dev/mapper/system-root    8.0G  2.4G  5.7G  30% /
+devtmpfs                   2.0G     0  2.0G   0% /dev
+tmpfs                      2.0G     0  2.0G   0% /dev/shm
+tmpfs                      2.0G  8.6M  2.0G   1% /run
+tmpfs                      2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/sda1                  497M  138M  360M  28% /boot
+/dev/mapper/system-var     4.0G  933M  3.1G  23% /var
+/dev/mapper/system-home    4.0G  361M  3.7G   9% /home
+/dev/mapper/system-log     4.0G   94M  3.9G   3% /var/log
+/dev/mapper/system-audit   4.0G   56M  4.0G   2% /var/log/audit
+/dev/mapper/system-tmp      10G   33M   10G   1% /tmp
+tmpfs                      396M     0  396M   0% /run/user/1000
+/dev/mapper/system-docker   10G   33M   10G   1% /var/lib/docker
+[root@k8s-master docker]# xfs_info /var/lib/docker
+meta-data=/dev/mapper/system-docker isize=512    agcount=4, agsize=655360 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0 spinodes=0
+data     =                       bsize=4096   blocks=2621440, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal               bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+
+
+
+
+  
+  
+  
+
+
