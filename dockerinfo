@@ -1,0 +1,68 @@
+on redhat aws
+
+[root@ip-172-31-6-161 kuber]# docker info
+Containers: 9
+ Running: 9
+ Paused: 0
+ Stopped: 0
+Images: 5
+Server Version: 17.03.1-ce
+Storage Driver: overlay
+ Backing Filesystem: xfs
+ Supports d_type: true
+Logging Driver: json-file
+Cgroup Driver: cgroupfs
+Plugins:
+ Volume: local
+ Network: bridge host macvlan null overlay
+Swarm: inactive
+Runtimes: runc
+Default Runtime: runc
+Init Binary: docker-init
+containerd version: 4ab9917febca54791c5f071a9d1f404867857fcc
+runc version: 54296cf40ad8143b62dbcaa1d90e520a2136ddfe
+init version: 949e6fa
+Security Options:
+ seccomp
+  Profile: default
+Kernel Version: 3.10.0-862.el7.x86_64
+Operating System: Red Hat Enterprise Linux Server 7.5 (Maipo)
+OSType: linux
+Architecture: x86_64
+CPUs: 2
+Total Memory: 3.7 GiB
+Name: ip-172-31-6-161.us-east-2.compute.internal
+ID: NEJP:IVM3:TV5N:M3C5:F2VR:33CK:IAZA:7IEP:ZQJR:FSYV:KQVJ:HMOX
+Docker Root Dir: /var/lib/docker
+Debug Mode (client): false
+Debug Mode (server): false
+Registry: https://index.docker.io/v1/
+Experimental: false
+Insecure Registries:
+ 127.0.0.0/8
+Live Restore Enabled: false
+[root@ip-172-31-6-161 kuber]# df -k
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/xvda2      10473452 2545860   7927592  25% /
+devtmpfs         1917584       0   1917584   0% /dev
+tmpfs            1939788       0   1939788   0% /dev/shm
+tmpfs            1939788   17228   1922560   1% /run
+tmpfs            1939788       0   1939788   0% /sys/fs/cgroup
+tmpfs             387960       0    387960   0% /run/user/1000
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/b1fef520b9d49f37b489da61b3aa72a6e36bf9b727b28a9464a1d85db166f24a/merged
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/93faf7eb0420639190943cd7d7a1b6211d200a71c9adbe461ea8c6ef3cc84d96/merged
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/5e362f7246dad44d05b8750460899d2253fb17850bc3102a6b5e09e44970a4b8/merged
+shm                65536       0     65536   0% /var/lib/docker/containers/693181f01d215c2bd64245ebc3adae7f58c2f0a24ef25b60dfc3f5424e3cde0b/shm
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/2de60caca0685a886efc11a14932faf08936e08e62ad98840a9d0d93f1c537cb/merged
+shm                65536       0     65536   0% /var/lib/docker/containers/32d0423efaccb71c320cd22eddaf512b27ff8fdb87db1d47bc208931ec08ec5b/shm
+shm                65536       0     65536   0% /var/lib/docker/containers/be7ef1e7510a2c4f508a68788bc5de0b02ecad680795c14724fcc134cf5b1754/shm
+shm                65536       0     65536   0% /var/lib/docker/containers/3cecb250a5542b20aaf81b1c3c87544d1cdc429527e2ff1cba97a8717d6f133f/shm
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/3388a9e79f91f6e4c03ff428c42c388fa1b9a33861cb41402028695e8ec1659a/merged
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/013f99e9e8fb75237a1e8346911c082c783df5d2e18ee4fdcb9035daaa216270/merged
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/4c5ecb0b8a6d9ce8af5ece2b189bd60a223d8b53f444df9a037371f82328560a/merged
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/14f57aec510807c0f61b666e0d00baca0dd24c171ab3ba23e118880a60da26a2/merged
+tmpfs            1939788      12   1939776   1% /var/lib/kubelet/pods/749ad3fb-68c8-11e8-a0a1-024cfd205a96/volumes/kubernetes.io~secret/kube-proxy-token-4sbtc
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/030abaf8d7732b1d0cd0bfb898a0dbbdb4a8e88d8432d1ec7eb162b386d8e5c0/merged
+shm                65536       0     65536   0% /var/lib/docker/containers/2e9af6d250f9f41eb258fbb2d3cc6b16d87f5a245d4bd2228992615f71bc1664/shm
+overlay         10473452 2545860   7927592  25% /var/lib/docker/overlay/6c6b2d62d6b920e238adc2e4e79cce0ebaa4a6f553f072a699c23583a6fec26f/merged
+[root@ip-172-31-6-161 kuber]#
