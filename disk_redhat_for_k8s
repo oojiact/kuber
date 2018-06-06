@@ -73,6 +73,27 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
 
 
 
+#
+
+create Disk for kubernetes
+
+mkdir /var/lib/docker
+mkdir /var/lib/kubelet
+
+lvcreate -L 3G system -n varlibdocker
+lvcreate -L 3G system -n varlibkubelet
+
+mkfs.xfs /dev/system/varlibdocker
+mkfs.xfs /dev/system/varlibkubelet
+
+vi /etc/fstab
+
+
+/dev/mapper/system-varlibdocker         /var/lib/docker         xfs     defaults,nodev          0 0
+/dev/mapper/system-varlibkubelet        /var/lib/kubelet                xfs     defaults,nodev          0 0
+
+
+mount -a
 
 
   
