@@ -1,0 +1,29 @@
+kubectl get events --all-namespaces
+kubectl describe pos (pod)
+
+kubectl get pods --all-namespaces -o wide    check all
+
+kubectl -n kube-system logs --v=7 kube-dns-6f4fd4bdf-w6ctf -c kubedns:
+
+kubectl -n default logs --v=7 webapp1-6c66d9cb4f-52vj
+
+[root@k8s-master kuber]# kubectl -n default logs --v=7 webapp1-6c66d9cb4f-52vj
+I0608 18:30:42.337120   21607 loader.go:357] Config loaded from file /root/.kube/config
+I0608 18:30:42.346808   21607 round_trippers.go:383] GET https://10.192.2.55:6443/api/v1/namespaces/default/pods/webapp1-6c66d9cb4f-52vj
+I0608 18:30:42.346825   21607 round_trippers.go:390] Request Headers:
+I0608 18:30:42.346832   21607 round_trippers.go:393]     Accept: application/json, */*
+I0608 18:30:42.346838   21607 round_trippers.go:393]     User-Agent: kubectl/v1.10.3 (linux/amd64) kubernetes/2bba012
+I0608 18:30:42.359445   21607 round_trippers.go:408] Response Status: 404 Not Found in 12 milliseconds
+I0608 18:30:42.360296   21607 helpers.go:201] server response object: [{
+  "metadata": {},
+  "status": "Failure",
+  "message": "pods \"webapp1-6c66d9cb4f-52vj\" not found",
+  "reason": "NotFound",
+  "details": {
+    "name": "webapp1-6c66d9cb4f-52vj",
+    "kind": "pods"
+  },
+  "code": 404
+}]
+F0608 18:30:42.360322   21607 helpers.go:119] Error from server (NotFound): pods "webapp1-6c66d9cb4f-52vj" not found
+
