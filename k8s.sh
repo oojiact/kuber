@@ -20,7 +20,7 @@ yum install -y wget
 wget https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
 chmod +x docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
 rpm -ivh docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
-yum install yum-utils
+yum install -y yum-utils
 yum-config-manager -y --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum install -y docker-ce-17.03.1.ce-1.el7.centos
 yum install -y kubelet kubeadm kubectl
