@@ -32,7 +32,8 @@ systemctl daemon-reload
 systemctl restart kubelet
 swapoff -a
 kubeadm init
-yum install -y git
-gitclone http://github.com/oojiact/kuber
-cd kuber
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 kubectl apply -f cni.yaml
+kubectl get nodes
