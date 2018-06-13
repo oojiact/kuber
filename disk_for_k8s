@@ -1,0 +1,78 @@
+Docker on CentOS 7 ? Choose EXT4 over XFS
+
+
+
+Another gotcha moment I came across playing with Docker on CentOS 7 in that new 
+Docker versions will need d_type support enabled in filesystem. Docker requires CentOS 7 
+to use and CentOS /RHEL 7 by default create XFS filesystems with d_type=0 disabled instead 
+of d_type=1. CentOS 7 though creates EXT4 filesystems with d_type=1 enabled by default. 
+See explanation at What is d_type and why Docker overlayfs need it - Linuxer Pro.
+
+Worse thing is you can't fix it on existing CentOS 7 created XFS partitions
+. You need to recreate the filesystem if you setup CentOS 7 filesystem with XFS partitions !
+
+
+What is d_type and why Docker overlayfs need it
+
+In my previous post I’ve mentioned a strange problem that occurs on Discourse running in Docker. 
+Today I’m going to explain this further as this problem could potentially impact any Docker setup uses overlayfs storage driver.
+Practically, CentOS 7 with all default setup during installation is 100% affected. Docker on Ubuntu uses AUFS so is not affected.
+
+What is d_type
+d_type is the term used in Linux kernel that stands for “directory entry type”. 
+Directory entry is a data structure that Linux kernel used to describe the 
+information of a directory on the filesystem. d_type is a field in that data 
+structure which represents the type of an “file” the directory entry points to. 
+It could a directory, a regular file, some special file such as a pipe, a char device, a socket file etc.
+
+d_type information was added to Linux kernel version 2.6.4.
+Since then Linux filesystems started to implement it over time.
+However still some filesystem don’t implement yet, some implement it in a optional way, 
+i.e. it could be enabled or disabled depends on how the user creates the filesystem.
+
+
+ถ้า set dtype =0 จะ error ประมาณนี้ครับ
+
+Code (Text):
+WARNING: overlay: the backing xfs filesystem is formatted without d_type support, which leads to incorrect behavior.
+        Reformat the filesystem with ftype=1 to enable d_type support.
+        Running without d_type support will not be supported in future releases.
+        
+        
+        
+        
+        Docker info command when d_type=1 enabled on CentOS 7.3 system with EXT4 filesystem
+Code (Text):
+docker info
+Containers: 1
+ Running: 0
+ Paused: 0
+ Stopped: 1
+Images: 4
+Server Version: 17.06.0-ce
+Storage Driver: overlay
+ Backing Filesystem: extfs
+ Supports d_type: true
+ 
+ 
+ เค้ายังบอกอีกว่า ถ้าอยากได้ d_type=true ตั้งแต่แรกให้ลงผ่าน kickstart
+ 
+ Note that XFS file systems must be created with the -n ftype=1 option enabled for use as an overlay. 
+ With the rootfs and any file systems created during system installation,
+ set the --mkfsoptions=-n ftype=1 parameters in the Anaconda kickstart. 
+ When creating a new file system after the installation, 
+ run the # mkfs -t xfs -n ftype=1 /PATH/TO/DEVICEcommand. 
+ To determine whether an existing file system is eligible for use as an overlay,
+ run the # xfs_info /PATH/TO/DEVICE | grep ftype command to see if the ftype=1 option is enabled.
+ 
+ 
+ Prerequisites
+OverlayFS is supported if you meet the following prerequisites:
+Docker CE only. OverlayFS is not supported on Docker EE. See Product compatibility matrix for a list of supported storage drivers for each Docker EE platform.
+Version 4.0 or higher of the Linux kernel. If you use an older kernel, you will need to use the overlay driver, which is not recommended.
+The following backing filesystems are supported:
+ext4 (RHEL 7.1 only)
+xfs (RHEL 7.2 and higher), but only with d_type=true enabled. Use xfs_info to verify that the ftype option is set to 1. To format an xfs filesystem correctly, use the flag -n ftype=1.
+Changing the storage driver will make any containers you have already created inaccessible on the local system. Use docker save to save containers, and push existing images to Docker Hub or a private repository, so that you not need to re-create them later.
+
+
