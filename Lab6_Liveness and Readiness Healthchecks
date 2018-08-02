@@ -1,0 +1,226 @@
+Step 1 - Launch Cluster
+To start, we need to launch a Kubernetes cluster.
+
+Execute the command below to start the cluster components and download the Kubectl CLI.
+
+master $ cat deploy.yaml
+kind: List
+apiVersion: v1
+items:
+- kind: ReplicationController
+  apiVersion: v1
+  metadata:
+    name: frontend
+    labels:
+      name: frontend
+  spec:
+    replicas: 1
+    selector:
+      name: frontend
+    template:
+      metadata:
+        labels:
+          name: frontend
+      spec:
+        containers:
+        - name: frontend
+          image: katacoda/docker-http-server:health
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            timeoutSeconds: 1
+- kind: ReplicationController
+  apiVersion: v1
+  metadata:
+    name: bad-frontend
+    labels:
+      name: bad-frontend
+  spec:
+    replicas: 1
+    selector:
+      name: bad-frontend
+    template:
+      metadata:
+        labels:
+          name: bad-frontend
+      spec:
+        containers:
+        - name: bad-frontend
+          image: katacoda/docker-http-server:unhealthy
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            timeoutSeconds: 1
+- kind: Service
+  apiVersion: v1
+  metadata:
+    labels:
+      app: frontend
+      kubernetes.io/cluster-service: "true"
+    name: frontend
+  spec:
+    type: NodePort
+    ports:
+    - port: 80
+      nodePort: 30080
+    selector:
+      app: frontend
+      
+master $ kubectl apply -f deploy.yaml
+replicationcontroller "frontend" created
+replicationcontroller "bad-frontend" created
+service "frontend" created
+
+Step 2 - Readiness Probe
+When deploying the cluster, two pods were also deployed to demonstrate health checking. You can view the deployment with
+
+When deploying the Replication Controller, each Pod has a Readiness and Liveness check. Each check has the following format for performing a healthcheck over HTTP.
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 1
+  timeoutSeconds: 1
+  
+  
+The settings can be changed to call different endpoints, for example, /ping, based on your application.
+
+
+Get Status
+The first Pod, bad-frontend is an HTTP service which always returns a 500 error indicating 
+it hasn't started correctly. You can view the status of the Pod with 
+
+master $ kubectl get pods --selector="name=bad-frontend"
+NAME                 READY     STATUS    RESTARTS   AGE
+bad-frontend-2dhq8   0/1       Running   1          1m
+
+Kubectl will return the Pods deployed with our particular label. Because the healthcheck is failing, 
+it will say that zero containers are ready. It will also indicate the number of restart attempts of the container.
+
+To find out more details of why it's failing, describe the Pod.
+
+
+
+master $ pod=$(kubectl get pods --selector="name=bad-frontend" --output=jsonpath={.items..metadata.name})
+master $ kubectl describe pod $pod
+Name:           bad-frontend-2dhq8
+Namespace:      default
+Node:           master/172.17.0.68
+Start Time:     Thu, 02 Aug 2018 11:43:34 +0000
+Labels:         name=bad-frontend
+Annotations:    <none>
+Status:         Running
+IP:             10.32.0.3
+Controlled By:  ReplicationController/bad-frontend
+Containers:
+  bad-frontend:
+    Container ID:   docker://a93bced3852f75680772397829942c23a9dd6581d25e6f26f0774c46ffeae547
+    Image:          katacoda/docker-http-server:unhealthy
+    Image ID:       docker-pullable://katacoda/docker-http-server@sha256:bea95c69c299c690103c39ebb3159c39c5061fee1dad13aa1b0625e0c6b52f22
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Thu, 02 Aug 2018 11:44:50 +0000
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    2
+      Started:      Thu, 02 Aug 2018 11:44:30 +0000
+      Finished:     Thu, 02 Aug 2018 11:44:50 +0000
+    Ready:          False
+    Restart Count:  3
+    Liveness:       http-get http://:80/ delay=1s timeout=1s period=10s #success=1 #failure=3
+    Readiness:      http-get http://:80/ delay=1s timeout=1s period=10s #success=1 #failure=3
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-tct4t (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          False
+  PodScheduled   True
+Volumes:
+  default-token-tct4t:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-tct4t
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason                 Age                From               Message
+  ----     ------                 ----               ----               -------
+  Warning  FailedScheduling       1m (x6 over 1m)    default-scheduler  0/1 nodes areavailable: 1 node(s) were not ready.
+  Normal   Scheduled              1m                 default-scheduler  Successfully assigned bad-frontend-2dhq8 to master
+  Normal   SuccessfulMountVolume  1m                 kubelet, master    MountVolume.SetUp succeeded for volume "default-token-tct4t"
+  Normal   Pulling                1m                 kubelet, master    pulling image"katacoda/docker-http-server:unhealthy"
+  Normal   Pulled                 1m                 kubelet, master    Successfully pulled image "katacoda/docker-http-server:unhealthy"
+  Normal   Created                31s (x3 over 1m)   kubelet, master    Created container
+  Normal   Started                31s (x3 over 1m)   kubelet, master    Started container
+  Normal   Killing                31s (x2 over 51s)  kubelet, master    Killing container with id docker://bad-frontend:Container failed liveness probe.. Container will bekilled and recreated.
+  Normal   Pulled                 31s (x2 over 51s)  kubelet, master    Container image "katacoda/docker-http-server:unhealthy" already present on machine
+  Warning  Unhealthy              29s (x6 over 1m)   kubelet, master    Readiness probe failed: HTTP probe failed with statuscode: 500
+  Warning  Unhealthy              21s (x6 over 1m)   kubelet, master    Liveness probe failed: HTTP probe failed with statuscode: 500
+  
+  
+ Readiness OK
+Our second Pod, frontend, returns an OK status on launch
+
+master $ kubectl get pods --selector="name=frontend"
+NAME             READY     STATUS    RESTARTS   AGE
+frontend-njcmg   1/1       Running   0          2m
+
+Step 3 - Liveness Probe
+With our second Pod currently running in a health state, we can simulate a failure occurring.
+
+At present, no crashes should have occurred.
+
+master $ kubectl get pods --selector="name=frontend"
+NAME             READY     STATUS    RESTARTS   AGE
+frontend-njcmg   1/1       Running   0          3m
+
+Crash Service
+The HTTP server has an additional endpoint that will cause it to return 500 errors. 
+Using kubectl exec it's possible to call the endpoint.
+
+master $ pod=$(kubectl get pods --selector="name=frontend" --output=jsonpath={.items..metadata.name})
+master $ kubectl exec $pod -- /usr/bin/curl -s localhost/unhealthy
+
+Liveness
+Based on the configuration, Kubernetes will execute the Liveness Probe. 
+If the Probe fails, Kubernetes will destroy and re-create the failed container.
+Execute the above command to crash the service and watch Kubernetes recover it automatically.
+
+
+master $ kubectl get pods --selector="name=frontend"
+NAME             READY     STATUS    RESTARTS   AGE
+frontend-njcmg   1/1       Running   1          4m
+
+The check may take a few moments to detect.
+
+
+
+
+
+
+
+
+
+ 
