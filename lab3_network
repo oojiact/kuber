@@ -1,0 +1,24 @@
+Kubernetes have advanced networking capabilities that allow Pods and Services to 
+communicate inside the cluster's network and externally.
+
+In this scenario, you will learn the following types of Kubernetes services.
+
+Cluster IP
+
+Target Ports
+
+NodePort
+
+External IPs
+
+Load Balancer
+
+Kubernetes Services are an abstract that defines a policy and approach on how to access a set of Pods. 
+The set of Pods accessed via a Service is based on a Label Selector.
+
+Step 1 - Cluster IP
+Cluster IP is the default approach when creating a Kubernetes Service. The service is allocated an internal IP that other components can use to access the pods.
+
+By having a single IP address it enables the service to be load balanced across multiple Pods.
+
+Services are deployed via 
