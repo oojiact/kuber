@@ -1,0 +1,218 @@
+Deploy Containers Using YAML
+
+Step 1 - Create Deployment
+
+One of the most common Kubernetes object is the deployment object. The deployment object defines the container spec required, 
+along with the name and labels used by other parts of Kubernetes to discover and connect to the application.
+
+Task
+
+Copy the following definition to the editor. The definition defines how to launch an 
+application called webapp1 using the Docker Image katacoda/docker-http-server that runs on Port 80
+
+deployment.yaml
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webapp1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: katacoda/docker-http-server:latest
+        ports:
+        - containerPort: 80
+        
+ 
+This is deploy to the cluster with the command
+
+
+ $ kubectl create -f deployment.yaml
+deployment "webapp1" created
+
+As it's a Deployment object, a list of all the deployed objects can be obtained via
+
+
+$ kubectl get deployment
+NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+webapp1   1         1         1            1           1mv
+
+
+Details of individual deployments can be outputted with 
+
+$ kubectl describe deployment webapp1
+Name:                   webapp1
+Namespace:              default
+CreationTimestamp:      Thu, 02 Aug 2018 08:57:55 +0000
+Labels:                 app=webapp1
+Annotations:            deployment.kubernetes.io/revision=1
+Selector:               app=webapp1
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  1 max unavailable, 1 max surge
+Pod Template:
+  Labels:  app=webapp1
+  Containers:
+   webapp1:
+    Image:        katacoda/docker-http-server:latest
+    Port:         80/TCP
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   webapp1-6c7d475889 (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  2m    deployment-controller  Scaled up replica set webapp1-6c7d475889 to 1
+  
+  Step 2 - Create Service
+Kubernetes has powerful networking capabilities that control how applications communicate.
+These networking configurations can also be controlled via YAML.
+
+Task
+Copy the Service definition to the editor. The Service selects all applications with the label webapp1. 
+As multiple replicas, or instances, are deployed, they will be automatically load balanced based on this common label.
+The Service makes the application available via a NodePort.
+
+service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp1-svc
+  labels:
+    app: webapp1
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: webapp1
+
+
+All Kubernetes objects are deployed in a consistent way using kubectl.
+
+
+service.yaml
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp1-svc
+  labels:
+    app: webapp1
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: webapp1
+    
+    
+Deploy the Service with 
+
+$ kubectl create -f service.yaml
+service "webapp1-svc" created
+
+
+$ kubectl describe svc webapp1-svc
+Name:                     webapp1-svc
+Namespace:                default
+Labels:                   app=webapp1
+Annotations:              <none>
+Selector:                 app=webapp1
+Type:                     NodePort
+IP:                       10.109.243.1
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  30080/TCP
+Endpoints:                172.18.0.4:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+
+
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-jxbn2</h1>
+
+
+
+Step 3 - Scale Deployment
+
+Details of the YAML can be changed as different configurations are required for deployment. 
+This follows an infrastructure as code mindset. The manifests should be kept under source control and used to 
+ensure that the configuration in production matches the configuration in source control.
+
+Task
+Update the deployment.yaml file to increase the number of instances running. For example, the file should look like this:
+
+
+edit deployment.yaml
+replicas: 4
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webapp1
+spec:
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: katacoda/docker-http-server:latest
+        ports:
+        - containerPort: 80
+
+Updates to existing definitions are applied using kubectl apply. 
+To scale the number of replicas, deploy the updated YAML file using
+
+$ kubectl apply -f deployment.yaml
+deployment "webapp1" configured
+
+$ kubectl get deployment
+NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+webapp1   4         4         4            4           14m
+
+$ kubectl get pods
+NAME                       READY     STATUS    RESTARTS   AGE
+webapp1-6c7d475889-djnlw   1/1       Running   0          1m
+webapp1-6c7d475889-j547s   1/1       Running   0          1m
+webapp1-6c7d475889-jxbn2   1/1       Running   0          15m
+webapp1-6c7d475889-sdhpn   1/1       Running   0          1m
+
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-djnlw</h1>
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-j547s</h1>
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-sdhpn</h1>
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-jxbn2</h1>
+$ curl host01:30080
+<h1>This request was processed by host: webapp1-6c7d475889-j547s</h1>
+
+
+
+
+
+
