@@ -1,0 +1,379 @@
+This scenario explains how to launch a simple, multi-tier web application using Kubernetes and Docker. The Guestbook example application stores notes from guests in Redis via JavaScript API calls. Redis contains a master (for storage), and a replicated set of redis 'slaves'.
+
+Core Concepts
+The following core concepts will be covered during this scenario. These are the foundations of understanding Kubernetes.
+
+Pods
+
+Replication Controllers
+
+Services
+
+NodePorts
+
+
+Step 1 - Start Kubernetes
+
+Health Check
+
+master $ kubectl cluster-info
+Kubernetes master is running at https://172.17.0.52:6443
+KubeDNS is running at https://172.17.0.52:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+master $ kubectl get nodes
+NAME      STATUS    ROLES     AGE       VERSION
+master    Ready     master    7m        v1.10.0
+node01    Ready     <none>    7m        v1.10.1
+
+If the node returns NotReady then it is still waiting. Wait a couple of seconds before retrying.
+
+Step 2 - Redis Master Controller
+
+The first stage of launching the application is to start the Redis Master. A Kubernetes service deployment has, 
+at least, two parts. A replication controller and a service.
+
+The replication controller defines how many instances should be running, the Docker Image to use, and a name to
+identify the service. Additional options can be utilized for configuration and discovery. Use the editor above to view
+the YAML definition.
+
+If Redis were to go down, the replication controller would restart it on an active node.
+
+Create Replication Controller
+In this example, the YAML defines a redis server called redis-master using the official redis running port 6379.
+
+The kubectl create command takes a YAML definition and instructs the master to start the controller.
+
+master $ cat redis-master-controller.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: redis-master
+  labels:
+    name: redis-master
+spec:
+  replicas: 1
+  selector:
+    name: redis-master
+  template:
+    metadata:
+      labels:
+        name: redis-master
+    spec:
+      containers:
+      - name: master
+        image: redis:3.0.7-alpine
+        ports:
+        - containerPort: 6379
+        
+        
+        
+master $ kubectl create -f redis-master-controller.yaml
+replicationcontroller "redis-master" created
+
+What's running?
+The above command created a Replication Controller. The Replication
+
+master $ kubectl get rc
+NAME           DESIRED   CURRENT   READY     AGE
+redis-master   1         1         1         20s
+
+All containers described as Pods. A pod is a collection of containers that makes up a particular application, 
+for example Redis. You can view this using kubectl
+
+master $ kubectl get pods
+NAME                 READY     STATUS    RESTARTS   AGE
+redis-master-kvk5d   1/1       Running   0          50s
+
+
+Step 3 - Redis Master Service
+The second part is a service. A Kubernetes service is a named load balancer that proxies traffic to one or more containers.
+The proxy works even if the containers are on different nodes.
+
+Services proxy communicate within the cluster and rarely expose ports to an outside interface.
+
+When you launch a service it looks like you cannot connect using curl or netcat unless you start it as part of Kubernetes. 
+The recommended approach is to have a LoadBalancer service to handle external communications.
+
+Create Service
+The YAML defines the name of the replication controller, redis-master, and the ports which should be proxied.
+
+
+master $ cat redis-master-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    name: redis-master
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 6379
+    targetPort: 6379
+  selector:
+    name: redis-master
+    
+    
+    
+ master $ kubectl create -f redis-master-service.yaml
+service "redis-master" created
+
+
+master $ kubectl get services
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+kubernetes     ClusterIP   10.96.0.1       <none>        443/TCP    14m
+redis-master   ClusterIP   10.96.113.205   <none>        6379/TCP   34s
+
+master $ kubectl describe services redis-master
+Name:              redis-master
+Namespace:         default
+Labels:            name=redis-master
+Annotations:       <none>
+Selector:          name=redis-master
+Type:              ClusterIP
+IP:                10.96.113.205
+Port:              <unset>  6379/TCP
+TargetPort:        6379/TCP
+Endpoints:         10.32.0.2:6379
+Session Affinity:  None
+Events:            <none>
+
+
+
+Step 4 - Replication Slave Pods
+In this example we'll be running Redis Slaves which will have replicated data from the master.
+More details of Redis replication can be found at http://redis.io/topics/replication
+
+As previously described, the controller defines how the service runs. In this example we need to determine
+how the service discovers the other pods. The YAML represents the _GET_HOSTSFROM property as DNS.
+You can change it to use Environment variables in the yaml but introduces creation-order dependencies as 
+the service needs to be running for the environment variable to be defined.
+
+Start Redis Slave Controller
+In this case, we'll be launching two instances of the pod using the image kubernetes/redis-slave:v2. 
+It will link to redis-master via DNS.
+
+
+master $ cat redis-slave-controller.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: redis-slave
+  labels:
+    name: redis-slave
+spec:
+  replicas: 2
+  selector:
+    name: redis-slave
+  template:
+    metadata:
+      labels:
+        name: redis-slave
+    spec:
+      containers:
+      - name: worker
+        image: gcr.io/google_samples/gb-redisslave:v1
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+          # If your cluster config does not include a dns service, then to
+          # instead access an environment variable to find the master
+          # service's host, comment out the 'value: dns' line above, and
+          # uncomment the line below.
+          # value: env
+        ports:
+        - containerPort: 6379
+        
+        
+        
+  
+
+    
+ master $ kubectl create -f redis-slave-controller.yaml
+replicationcontroller "redis-slave" created
+
+
+master $ kubectl get rc
+NAME           DESIRED   CURRENT   READY     AGE
+redis-master   1         1         1         6m
+redis-slave    2         2         0         49s
+
+Step 5 - Redis Slave Service
+As before we need to make our slaves accessible to incoming requests. 
+This is done by starting a service which knows how to communicate with redis-slave.
+
+Because we have two replicated pods the service will also provide load balancing between the two nodes.
+
+Start Redis Slave Service
+
+
+master $ cat redis-slave-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-slave
+  labels:
+    name: redis-slave
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 6379
+  selector:
+    name: redis-slave
+    
+    
+    
+master $ kubectl create -f redis-slave-service.yaml
+service "redis-slave" created
+
+master $ kubectl get services
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP    17m
+redis-master   ClusterIP   10.96.113.205    <none>        6379/TCP   3m
+redis-slave    ClusterIP   10.101.198.245   <none>        6379/TCP   33s
+
+
+Step 6 - Frontend Replicated Pods
+With the data services started we can now deploy the web application. The pattern of deploying a 
+web application is the same as the pods we've deployed before.
+
+Launch Frontend
+The YAML defines a service called frontend that uses the image kubernetes/example-guestbook-php-redis:v2.
+The replication controller will ensure that three pods will always exist.
+
+
+
+master $ cat frontend-controller.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: frontend
+  labels:
+    name: frontend
+spec:
+  replicas: 3
+  selector:
+    name: frontend
+  template:
+    metadata:
+      labels:
+        name: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google_samples/gb-frontend:v3
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+          # If your cluster config does not include a dns service, then to
+          # instead access environment variables to find service host
+          # info, comment out the 'value: dns' line above, and uncomment the
+          # line below.
+          # value: env
+        ports:
+        - containerPort: 80
+        
+master $ kubectl create -f frontend-controller.yaml
+replicationcontroller "frontend" created
+
+master $ kubectl get rc
+NAME           DESIRED   CURRENT   READY     AGE
+frontend       3         3         0         44s
+redis-master   1         1         1         9m
+redis-slave    2         2         2         3m
+
+
+master $ kubectl get pods
+NAME                 READY     STATUS              RESTARTS   AGE
+frontend-7747w       0/1       ContainerCreating   0          2m
+frontend-8wt2n       0/1       ContainerCreating   0          2m
+frontend-xp2lq       0/1       ContainerCreating   0          2m
+redis-master-kvk5d   1/1       Running             0          10m
+redis-slave-5hzpl    1/1       Running             0          5m
+redis-slave-94qns    1/1       Running             0          5m
+
+
+
+PHP Code
+The PHP code uses HTTP and JSON to communicate with Redis. When setting a value requests go to
+redis-master while read data comes from the redis-slave nodes
+
+Step 7 - Guestbook Frontend Service
+To make the frontend accessible we need to start a service to configure the proxy.
+
+Start Proxy
+The YAML defines the service as a NodePort. NodePort allows you to set
+well-known ports that are shared across your entire cluster. This is like -p 80:80 in Docker.
+
+In this case, we define our web app is running on port 80 but we'll expose the service on 30080.
+
+
+master $ cat frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    name: frontend
+spec:
+  # if your cluster supports it, uncomment the following to automatically create
+  # an external load-balanced IP for the frontend service.
+  # type: LoadBalancer
+  type: NodePort
+  ports:
+    # the port that this service should serve on
+    - port: 80
+      nodePort: 30080
+  selector:
+    name: frontend
+
+ 
+master $ kubectl create -f frontend-service.yaml
+service "frontend" created
+
+
+master $ kubectl get services
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+frontend       NodePort    10.105.30.162    <none>        80:30080/TCP   48s
+kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP        22m
+redis-master   ClusterIP   10.96.113.205    <none>        6379/TCP       8m
+redis-slave    ClusterIP   10.101.198.245   <none>        6379/TCP       5m
+
+Step 8 - Access Guestbook Frontend
+With all controllers and services defined Kubernetes will start launching them as Pods. 
+A pod can have different states depending on what's happening. For example, if the Docker
+Image is still being downloaded then the Pod will have a pending state as it's not able to launch.
+Once ready the status will change to running.
+
+View Pods Status
+You can view the status using the following command:
+
+master $ kubectl get pods
+NAME                 READY     STATUS              RESTARTS   AGE
+frontend-7747w       0/1       ContainerCreating   0          4m
+frontend-8wt2n       0/1       ContainerCreating   0          4m
+frontend-xp2lq       0/1       ContainerCreating   0          4m
+redis-master-kvk5d   1/1       Running             0          13m
+redis-slave-5hzpl    1/1       Running             0          7m
+redis-slave-94qns    1/1       Running             0          7m
+
+
+Find NodePort
+If you didn't assign a well-known NodePort then Kubernetes will assign an available port randomly.
+You can find the assigned NodePort using kubectl.
+
+master $ kubectl describe service frontend | grep NodePort
+Type:                     NodePort
+NodePort:                 <unset>  30080/TCP
+
+
+View UI
+Once the Pod is in running state you will be able to view the UI via port 30080. Use the URL to view the page
+
+https://2886795316-30080-frugo01.environments.katacoda.com/
+Under the covers the PHP service is discovering the Redis instances via DNS. You now have a working multi-tier application deployed on Kubernetes.
+
+
+
