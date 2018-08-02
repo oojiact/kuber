@@ -1,0 +1,184 @@
+1. start container http
+
+$ kubectl run http --image=katacoda/docker-http-server:latest --replicas=1
+deployment "http" created
+
+2. view status of the deployment
+kubectl get deployments
+
+3. describe the deply ment process
+kubectl describe deployment http
+
+$ kubectl describe deployment http
+Name:                   http
+Namespace:              default
+CreationTimestamp:      Thu, 02 Aug 2018 08:20:05 +0000
+Labels:                 run=http
+Annotations:            deployment.kubernetes.io/revision=1
+Selector:               run=http
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  1 max unavailable, 1 max surge
+Pod Template:
+  Labels:  run=http
+  Containers:
+   http:
+    Image:        katacoda/docker-http-server:latest
+    Port:         <none>
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   http-85ddfcb674 (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  9m    deployment-controller  Scaled up replica set http-85ddfcb674 to 1
+  
+  
+
+4. kubectl expose
+With the deployment created, we can use kubectl to create 
+a service which exposes the Pods on a particular port.
+Expose the newly deployed http deployment via kubectl expose. 
+The command allows you to define the different parameters of the service and how to expose the deployment.
+
+Use the following command to expose the container port 80 on the host 8000 binding to the external-ip of the host.
+
+$ kubectl expose deployment http --external-ip="172.17.0.20" --port=8000 --target-port=80
+service "http" exposed
+
+$ ifconfig -a
+docker0   Link encap:Ethernet  HWaddr 02:42:3d:36:a2:e5
+          inet addr:172.18.0.1  Bcast:0.0.0.0  Mask:255.255.255.0
+          inet6 addr: fe80::42:3dff:fe36:a2e5/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1096 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1130 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:258035 (258.0 KB)  TX bytes:193316 (193.3 KB)
+
+ens3      Link encap:Ethernet  HWaddr 02:42:ac:11:00:14
+          inet addr:172.17.0.20  Bcast:172.17.255.255  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe11:14/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:2909 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1383 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:2636462 (2.6 MB)  TX bytes:117243 (117.2 KB)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:31520 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:31520 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1
+          RX bytes:10685059 (10.6 MB)  TX bytes:10685059 (10.6 MB)
+          
+          
+5. Test
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+
+
+
+6. Kubectl Run and Expose
+With kubectl run it's possible to create the deployment and expose it as a single command.
+Use the command command to create a second http service exposed on port 8001
+
+$ kubectl run httpexposed --image=katacoda/docker-http-server:latest --replicas=1 --port=80 --hostport=8001
+deployment "httpexposed" created
+
+test 
+$ curl http://172.17.0.20:8001
+<h1>This request was processed by host: httpexposed-7797565fc6-p6pbv</h1>
+
+$ kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+http         ClusterIP   10.108.69.43   172.17.0.20   8000/TCP   6m
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    11m
+
+
+$ docker ps | grep httpexposed
+52b2aa438d9f        katacoda/docker-http-server                   "/app"                   56 seconds ago      Up 55 seconds                              k8s_httpexposed_httpexposed-7797565fc6-p6pbv_default_5e32fa94-962e-11e8-bfd5-0242ac110014_0
+7f768339cb2c        gcr.io/google_containers/pause-amd64:3.0      "/pause"                 58 seconds ago      Up 57 seconds       0.0.0.0:8001->80/tcp   k8s_POD_httpexposed-7797565fc6-p6pbv_default_5e32fa94-962e-11e8-bfd5-0242ac110014_0
+
+
+Pause Containers
+Running the above command you'll notice the ports are exposed on the Pod, not the http container itself.
+The Pause container is responsible for defining the network for the Pod. Other containers in the pod share the same network namespace.
+This improves network performance and allow multiple containers to communicate over the same network interface.
+
+7.Scale Containers
+
+With our deployment running we can now use kubectl to scale the number of replicas.
+
+Scaling the deployment will request Kubernetes to launch additional Pods. 
+These Pods will then automatically be load balanced using the exposed Service.
+
+The command kubectl scale allows us to adjust the number 
+of Pods running for a particular deployment or replication controller.
+
+$ kubectl scale --replicas=3 deployment http
+deployment "http" scaled
+
+$ kubectl get pods
+NAME                           READY     STATUS    RESTARTS   AGE
+http-85ddfcb674-5htdm          1/1       Running   0          12s
+http-85ddfcb674-v8xfx          1/1       Running   0          18m
+http-85ddfcb674-wb6zw          1/1       Running   0          12s
+httpexposed-7797565fc6-p6pbv   1/1       Running   0          7m
+
+$ kubectl describe svc http
+Name:              http
+Namespace:         default
+Labels:            run=http
+Annotations:       <none>
+Selector:          run=http
+Type:              ClusterIP
+IP:                10.108.69.43
+External IPs:      172.17.0.20
+Port:              <unset>  8000/TCP
+TargetPort:        80/TCP
+Endpoints:         172.18.0.2:80,172.18.0.6:80,172.18.0.7:80
+Session Affinity:  None
+Events:            <none>
+
+
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-wb6zw</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-v8xfx</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-5htdm</h1>
+$ curl http://172.17.0.20:8000
+<h1>This request was processed by host: http-85ddfcb674-5htdm</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+          
