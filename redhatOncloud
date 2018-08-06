@@ -81,3 +81,173 @@ kube-system   weave-net-dw94n                    2/2       Running   0          
 
        
        
+       
+ [root@master01 kuber]# kubectl get all --all-namespaces
+NAMESPACE     NAME                                   READY     STATUS    RESTARTS   AGE
+kube-system   pod/coredns-78fcdf6894-fkfs2           1/1       Running   0          8m
+kube-system   pod/coredns-78fcdf6894-rmld5           1/1       Running   0          8m
+kube-system   pod/etcd-master01                      1/1       Running   0          7m
+kube-system   pod/kube-apiserver-master01            1/1       Running   0          7m
+kube-system   pod/kube-controller-manager-master01   1/1       Running   0          7m
+kube-system   pod/kube-proxy-2q7bj                   1/1       Running   0          8m
+kube-system   pod/kube-proxy-f9k5g                   1/1       Running   0          8m
+kube-system   pod/kube-scheduler-master01            1/1       Running   0          7m
+kube-system   pod/weave-net-9cq6k                    2/2       Running   1          8m
+kube-system   pod/weave-net-dw94n                    2/2       Running   0          8m
+
+NAMESPACE     NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         AGE
+default       service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP         8m
+kube-system   service/kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP   8m
+
+NAMESPACE     NAME                        DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR                   AGE
+kube-system   daemonset.apps/kube-proxy   2         2         2         2            2           beta.kubernetes.io/arch=amd64   8m
+kube-system   daemonset.apps/weave-net    2         2         2         2            2           <none>                          8m
+
+NAMESPACE     NAME                      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/coredns   2         2         2            2           8m
+
+NAMESPACE     NAME                                 DESIRED   CURRENT   READY     AGE
+kube-system   replicaset.apps/coredns-78fcdf6894   2         2         2         8m
+
+
+[root@master01 ~]# docker info
+Containers: 17
+ Running: 17
+ Paused: 0
+ Stopped: 0
+Images: 9
+Server Version: 17.03.1-ce
+Storage Driver: overlay
+ Backing Filesystem: xfs
+ Supports d_type: true
+Logging Driver: json-file
+Cgroup Driver: cgroupfs
+Plugins: 
+ Volume: local
+ Network: bridge host macvlan null overlay
+Swarm: inactive
+Runtimes: runc
+Default Runtime: runc
+Init Binary: docker-init
+containerd version: 4ab9917febca54791c5f071a9d1f404867857fcc
+runc version: 54296cf40ad8143b62dbcaa1d90e520a2136ddfe
+init version: 949e6fa
+Security Options:
+ seccomp
+  Profile: default
+Kernel Version: 3.10.0-862.9.1.el7.x86_64
+Operating System: Red Hat Enterprise Linux Server 7.5 (Maipo)
+OSType: linux
+Architecture: x86_64
+CPUs: 2
+Total Memory: 7.147 GiB
+Name: master01
+ID: OJO6:NQJO:XP7M:X2YZ:JYHL:4VUS:YE42:QG5X:NOYB:KBR7:LNTN:B7MQ
+Docker Root Dir: /var/lib/docker
+Debug Mode (client): false
+Debug Mode (server): false
+Registry: https://index.docker.io/v1/
+Experimental: false
+Insecure Registries:
+ 127.0.0.0/8
+Live Restore Enabled: false
+
+
+
+config.yaml
+
+[root@master01 kubelet]# cat config.yaml 
+address: 0.0.0.0
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 2m0s
+    enabled: true
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+cgroupDriver: cgroupfs
+cgroupsPerQOS: true
+clusterDNS:
+- 10.96.0.10
+clusterDomain: cluster.local
+containerLogMaxFiles: 5
+containerLogMaxSize: 10Mi
+contentType: application/vnd.kubernetes.protobuf
+cpuCFSQuota: true
+cpuManagerPolicy: none
+cpuManagerReconcilePeriod: 10s
+enableControllerAttachDetach: true
+enableDebuggingHandlers: true
+enforceNodeAllocatable:
+- pods
+eventBurst: 10
+eventRecordQPS: 5
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 100Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+evictionPressureTransitionPeriod: 5m0s
+failSwapOn: true
+fileCheckFrequency: 20s
+hairpinMode: promiscuous-bridge
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 20s
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+imageMinimumGCAge: 2m0s
+iptablesDropBit: 15
+iptablesMasqueradeBit: 14
+kind: KubeletConfiguration
+kubeAPIBurst: 10
+kubeAPIQPS: 5
+makeIPTablesUtilChains: true
+maxOpenFiles: 1000000
+maxPods: 110
+nodeStatusUpdateFrequency: 10s
+oomScoreAdj: -999
+podPidsLimit: -1
+port: 10250
+registryBurst: 10
+registryPullQPS: 5
+resolvConf: /etc/resolv.conf
+rotateCertificates: true
+runtimeRequestTimeout: 2m0s
+serializeImagePulls: true
+staticPodPath: /etc/kubernetes/manifests
+streamingConnectionIdleTimeout: 4h0m0s
+syncFrequency: 1m0s
+volumeStatsAggPeriod: 1m0s
+
+
+[root@master01 kubelet]# uname -a
+Linux master01 3.10.0-862.9.1.el7.x86_64 #1 SMP Wed Jun 27 04:30:39 EDT 2018 x86_64 x86_64 x86_64 GNU/Linux
+[root@master01 kubelet]# hostnamectl 
+   Static hostname: master01
+         Icon name: computer-vm
+           Chassis: vm
+        Machine ID: e6eac0c2d69add65c466bbf2013560a2
+           Boot ID: d57815ffc8084e15a5e4ee591b504045
+    Virtualization: kvm
+  Operating System: Red Hat Enterprise Linux Server 7.5 (Maipo)
+       CPE OS Name: cpe:/o:redhat:enterprise_linux:7.5:GA:server
+            Kernel: Linux 3.10.0-862.9.1.el7.x86_64
+      Architecture: x86-64
+      
+      
+      [root@master01 kubelet]# uname -r
+3.10.0-862.9.1.el7.x86_64
+
+
+
+
+
+       
