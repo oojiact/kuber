@@ -1,0 +1,83 @@
+ip add
+
+
+[root@master01 kuber]# ip add
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1460 qdisc mq state UP group default qlen 1000
+    link/ether 42:01:0a:94:00:02 brd ff:ff:ff:ff:ff:ff
+    inet 10.148.0.2/32 brd 10.148.0.2 scope global noprefixroute dynamic eth0
+       valid_lft 85878sec preferred_lft 85878sec
+    inet6 fe80::4001:aff:fe94:2/64 scope link 
+       valid_lft forever preferred_lft forever
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    link/ether 02:42:67:e2:a9:1e brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+4: datapath: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/ether 82:f6:4e:e5:67:4e brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::80f6:4eff:fee5:674e/64 scope link 
+       valid_lft forever preferred_lft forever
+6: weave: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue state UP group default qlen 1000
+    link/ether b2:4f:ce:e6:76:7e brd ff:ff:ff:ff:ff:ff
+    inet 10.32.0.1/12 scope global weave
+       valid_lft forever preferred_lft forever
+    inet6 fe80::b04f:ceff:fee6:767e/64 scope link 
+       valid_lft forever preferred_lft forever
+7: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether b2:d9:88:f8:1c:a2 brd ff:ff:ff:ff:ff:ff
+9: vethwe-datapath@vethwe-bridge: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue master datapath state UP group default 
+    link/ether ba:ca:ec:dd:22:5e brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::b8ca:ecff:fedd:225e/64 scope link 
+       valid_lft forever preferred_lft forever
+10: vethwe-bridge@vethwe-datapath: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue master weave state UP group default 
+    link/ether f6:75:28:73:06:49 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::f475:28ff:fe73:649/64 scope link 
+       valid_lft forever preferred_lft forever
+11: vxlan-6784: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 65520 qdisc noqueue master datapath state UNKNOWN group default qlen 1000
+    link/ether 2e:91:22:5d:ee:0b brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::2c91:22ff:fe5d:ee0b/64 scope link 
+       valid_lft forever preferred_lft forever
+13: vethwepl8cd846c@if12: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue master weave state UP group default 
+    link/ether 9e:4a:da:43:65:c9 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet6 fe80::9c4a:daff:fe43:65c9/64 scope link 
+       valid_lft forever preferred_lft forever
+15: vethwepl787478d@if14: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue master weave state UP group default 
+    link/ether d2:29:d7:f9:42:4b brd ff:ff:ff:ff:ff:ff link-netnsid 1
+    inet6 fe80::d029:d7ff:fef9:424b/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+       
+       
+       
+ [root@master01 kuber]# kubectl get pods --all-namespaces -o wide
+NAMESPACE     NAME                               READY     STATUS    RESTARTS   AGE       IP           NODE
+kube-system   coredns-78fcdf6894-fkfs2           1/1       Running   0          5m        10.32.0.2    master01
+kube-system   coredns-78fcdf6894-rmld5           1/1       Running   0          5m        10.32.0.3    master01
+kube-system   etcd-master01                      1/1       Running   0          4m        10.148.0.2   master01
+kube-system   kube-apiserver-master01            1/1       Running   0          4m        10.148.0.2   master01
+kube-system   kube-controller-manager-master01   1/1       Running   0          4m        10.148.0.2   master01
+kube-system   kube-proxy-2q7bj                   1/1       Running   0          5m        10.142.0.2   node-01
+kube-system   kube-proxy-f9k5g                   1/1       Running   0          5m        10.148.0.2   master01
+kube-system   kube-scheduler-master01            1/1       Running   0          4m        10.148.0.2   master01
+kube-system   weave-net-9cq6k                    2/2       Running   1          5m        10.142.0.2   node-01
+kube-system   weave-net-dw94n                    2/2       Running   0          5m        10.148.0.2   master01
+
+
+6: weave: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1376 qdisc noqueue state UP group default qlen 1000
+    link/ether b2:4f:ce:e6:76:7e brd ff:ff:ff:ff:ff:ff
+    inet 10.32.0.1/12 scope global weave
+       valid_lft forever preferred_lft forever
+    inet6 fe80::b04f:ceff:fee6:767e/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+       
+       
+       kube 
+
+       
+       
