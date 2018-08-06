@@ -1,3 +1,16 @@
+1. kubectl get all --all-namespaces
+
+2. kubectl -n kube-system describe pod coredns-78fcdf6894-zqnm7
+
+3. kubectl describe node
+
+
+
+
+
+
+
+
 kubectl get events --all-namespaces
 kubectl describe pos (pod)
 
