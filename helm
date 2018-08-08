@@ -1,0 +1,100 @@
+install helm
+
+https://github.com/helm/helm/releases
+
+
+wget https://storage.googleapis.com/kubernetes-helm/helm-v2.10.0-rc.2-linux-386.tar.gz
+gunzip helm-v2.10.0-rc.2-linux-386.tar.gz
+tar -xvf helm-v2.10.0-rc.2-linux-386.tar
+cd linux-386
+mv helm /usr/local/bin
+
+[root@master-01 linux-386]# helm init
+Creating /root/.helm 
+Creating /root/.helm/repository 
+Creating /root/.helm/repository/cache 
+Creating /root/.helm/repository/local 
+Creating /root/.helm/plugins 
+Creating /root/.helm/starters 
+Creating /root/.helm/cache/archive 
+Creating /root/.helm/repository/repositories.yaml 
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com 
+Adding local repo with URL: http://127.0.0.1:8879/charts 
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+To prevent this, run `helm init` with the --tiller-tls-verify flag.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+Happy Helming! 
+
+
+
+[root@master-01 linux-386]# kubectl config current-context
+kubernetes-admin@kubernetes
+[root@master-01 linux-386]# helm init --upgrade
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been upgraded to the current version.
+Happy Helming!
+
+
+
+
+[root@master-01 linux-386]# helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Skip local chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+
+
+
+https://github.com/helm/charts/tree/master/stable/nginx-ingress
+
+
+
+730 kubectl create serviceaccount tiller --namespace kube-system
+731 kubectl create -f rbac-config.yaml
+732 rm -rf ~/.helm/
+733 kubectl create -f rbac-config.yaml
+734 helm init --service-account tiller
+735 kubectl create namespace tiller-world
+736 kubectl create serviceaccount tiller --namespace tiller-world
+737 kubectl create -f role-tiller.yaml
+738 kubectl create -f rolebinding-tiller.yaml
+739 helm init --service-account tiller --tiller-namespace tiller-world
+740 helm install nginx --tiller-namespace tiller-world --namespace tiller-world
+741 helm install stable/nginx --tiller-namespace tiller-world --namespace tiller-world
+742 helm search
+743 helm install stable/nginx-ingress --tiller-namespace tiller-world --namespace tiller-world
+
+The command 740 which is fetching nginx chart from helm repositories is not found and when i search i found there is another name with stable/nginx-ingress as per 743 command
+but when I check the pod status it showing one container is crashloopbackoff
+
+#->kubectl get pods --namespace tiller-world
+NAME READY STATUS RESTARTS AGE
+queenly-cat-nginx-ingress-controller-687bf4b8f4-6l72r 0/1 CrashLoopBackOff 5 4m
+queenly-cat-nginx-ingress-default-backend-558bc685df-vl4s4 1/1 Running 0 4m
+tiller-deploy-6bf6bd5d98-xjq76 1/1 Running 0 5m
+
+and when i check the logs it shows permission issue.
+kubectl logs queenly-cat-nginx-ingress-controller-687bf4b8f4-6l72r --namespace tiller-world
+I0123 14:09:34.244015 7 launch.go:113] &{NGINX 0.9.0-beta.15 git-a3e86f2 https://github.com/kubernetes/ingress}
+I0123 14:09:34.244057 7 launch.go:116] Watching for ingress class: nginx
+I0123 14:09:34.244370 7 launch.go:291] Creating API client for https://xx.xx.xx.xx1:443
+I0123 14:09:34.263811 7 launch.go:304] Running in Kubernetes Cluster version v1.9 (v1.9.0) - git (clean) commit 925c127ec6b946659ad0fd596fa959be43f0cc05 - platform linux/amd64
+F0123 14:09:34.264954 7 launch.go:136] ✖ It seems the cluster it is running with Authorization enabled (like RBAC) and there is no permissions for the ingress controller. Please check the configuration
+
+When i finding appropriate solutions for it i have found already issue.
+kubernetes/website#6390
+
+And tried but it gets another error
+helm install stable/nginx-ingress --tiller-namespace tiller-world --namespace tiller-world --set rbac.create=true
+Error: release interesting-chinchilla failed: clusterroles.rbac.authorization.k8s.io is forbidden: User "system:serviceaccount:tiller-world:tiller" cannot create clusterroles.rbac.authorization.k8s.io at the cluster scope
+
+Also Doc has to modify to use correct chart repository.
+Any help will be appreciated. Its block for installing monocular.
+
+
+
