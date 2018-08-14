@@ -1,0 +1,62 @@
+wget https://storage.googleapis.com/kubernetes-helm/helm-v2.6.2-linux-amd64.tar.gz
+tar zxfv helm-v2.6.2-linux-amd64.tar.gz cp linux-amd64/helm .
+cd linux-amd64/helm
+cp helm /usr/local/bin
+helm init
+
+[root@master-01 ~]# helm init
+Creating /root/.helm 
+Creating /root/.helm/repository 
+Creating /root/.helm/repository/cache 
+Creating /root/.helm/repository/local 
+Creating /root/.helm/plugins 
+Creating /root/.helm/starters 
+Creating /root/.helm/cache/archive 
+Creating /root/.helm/repository/repositories.yaml 
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+Happy Helming!
+
+[root@master-01 ~]# kubectl get all --all-namespaces
+NAMESPACE     NAME                                    READY     STATUS    RESTARTS   AGE
+kube-system   pod/coredns-78fcdf6894-2zczb            1/1       Running   0          3m
+kube-system   pod/coredns-78fcdf6894-cxlbv            1/1       Running   0          3m
+kube-system   pod/etcd-master-01                      1/1       Running   0          1m
+kube-system   pod/kube-apiserver-master-01            1/1       Running   0          2m
+kube-system   pod/kube-controller-manager-master-01   1/1       Running   0          2m
+kube-system   pod/kube-proxy-69w5g                    1/1       Running   0          3m
+kube-system   pod/kube-proxy-92pqf                    1/1       Running   0          3m
+kube-system   pod/kube-scheduler-master-01            1/1       Running   0          1m
+kube-system   pod/tiller-deploy-777d44c859-8tr2l      1/1       Running   0          33s
+kube-system   pod/weave-net-d74c5                     2/2       Running   0          3m
+kube-system   pod/weave-net-r4d4s                     2/2       Running   1          3m
+
+NAMESPACE     NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)         AGE
+default       service/kubernetes      ClusterIP   10.96.0.1      <none>        443/TCP         3m
+kube-system   service/kube-dns        ClusterIP   10.96.0.10     <none>        53/UDP,53/TCP   3m
+kube-system   service/tiller-deploy   ClusterIP   10.105.38.73   <none>        44134/TCP       33s
+
+NAMESPACE     NAME                        DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR                   AGE
+kube-system   daemonset.apps/kube-proxy   2         2         2         2            2           beta.kubernetes.io/arch=amd64   3m
+kube-system   daemonset.apps/weave-net    2         2         2         2            2           <none>                          3m
+
+NAMESPACE     NAME                            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/coredns         2         2         2            2           3m
+kube-system   deployment.apps/tiller-deploy   1         1         1            1           33s
+
+NAMESPACE     NAME                                       DESIRED   CURRENT   READY     AGE
+kube-system   replicaset.apps/coredns-78fcdf6894         2         2         2         3m
+kube-system   replicaset.apps/tiller-deploy-777d44c859   1         1         1         33s
+
+
+helm update
+
+[root@master-01 ~]# helm update
+Command "update" is deprecated, use 'helm repo update'
+
+Hang tight while we grab the latest from your chart repositories...
+...Skip local chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+
