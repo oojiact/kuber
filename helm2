@@ -172,3 +172,6 @@ kubectl -n kube-system get sa tiller -o=yaml
 kubectl -n kube-system get clusterrolebinding tiller-cluster-rule -o=yaml
 
 
+kubectl --namespace kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account tiller --upgrade
