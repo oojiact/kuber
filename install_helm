@@ -83,4 +83,21 @@ Update Complete. ⎈ Happy Helming!⎈
 
 
 
+Using Helm¶
+NGINX Ingress controller can be installed via Helm using the chart stable/nginx-ingress from the official charts repository. To install the chart with the release name my-nginx:
+
+
+helm install stable/nginx-ingress --name my-nginx
+If the kubernetes cluster has RBAC enabled, then run:
+
+
+helm install stable/nginx-ingress --name my-nginx --set rbac.create=true
+Detect installed version:
+
+Copied to clipboard
+POD_NAME=$(kubectl get pods -l app=nginx-ingress -o jsonpath={.items[0].metadata.name})
+kubectl exec -it $POD_NAME -- /nginx-ingress-controller --version
+
+
+
 
