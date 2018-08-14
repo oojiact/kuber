@@ -50,13 +50,37 @@ kube-system   replicaset.apps/coredns-78fcdf6894         2         2         2  
 kube-system   replicaset.apps/tiller-deploy-777d44c859   1         1         1         33s
 
 
-helm update
 
-[root@master-01 ~]# helm update
-Command "update" is deprecated, use 'helm repo update'
 
+helm init --upgrade
+
+
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule \
+   --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy \
+   -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+   
+   
+   
+helm search 
+
+[root@master-01 linux-386]# helm search
+NAME                                    CHART VERSION   APP VERSION                     DESCRIPTION                                                 
+stable/acs-engine-autoscaler            2.2.0           2.1.1                           Scales worker nodes within agent pools                      
+stable/aerospike                        0.1.7           v3.14.1.2                       A Helm chart for Aerospike in Kubernetes                    
+stable/anchore-engine                   0.2.0           0.2.3                           Anchore container analysis and policy evaluation engine s...
+stable/apm-server                       0.1.0           6.2.4                           The server receives data from the Elastic APM agents and ...
+stable/ark                              1.2.0           0.9.1                           A Helm chart for ark       
+
+
+
+[root@master-01 linux-386]# helm repo update
 Hang tight while we grab the latest from your chart repositories...
 ...Skip local chart repository
 ...Successfully got an update from the "stable" chart repository
-Update Complete. ⎈ Happy Helming!⎈ 
+Update Complete. ⎈ Happy Helming!⎈
+
+
+
 
