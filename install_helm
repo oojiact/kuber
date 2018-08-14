@@ -102,4 +102,4 @@ kubectl exec -it $POD_NAME -- /nginx-ingress-controller --version
 https://github.com/helm/charts/tree/master/stable/nginx-ingress
 
 
-
+https://ryaneschinger.com/blog/automatic-dns-kubernetes-ingresses-externaldns/
