@@ -99,5 +99,7 @@ POD_NAME=$(kubectl get pods -l app=nginx-ingress -o jsonpath={.items[0].metadata
 kubectl exec -it $POD_NAME -- /nginx-ingress-controller --version
 
 
+https://github.com/helm/charts/tree/master/stable/nginx-ingress
+
 
 
