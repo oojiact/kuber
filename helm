@@ -97,4 +97,195 @@ Also Doc has to modify to use correct chart repository.
 Any help will be appreciated. Its block for installing monocular.
 
 
+#### 
 
+curl -o get_helm.sh https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  6685  100  6685    0     0  16648      0 --:--:-- --:--:-- --:--:-- 16670
+
+
+chmod +x get_helm.sh
+
+
+[root@master-01 kuber]# ./get_helm.sh 
+Downloading https://kubernetes-helm.storage.googleapis.com/helm-v2.9.1-linux-amd64.tar.gz
+Preparing to install into /usr/local/bin
+helm installed into /usr/local/bin/helm
+Run 'helm init' to configure helm.
+
+
+
+[root@master-01 kuber]# helm init
+Creating /root/.helm 
+Creating /root/.helm/repository 
+Creating /root/.helm/repository/cache 
+Creating /root/.helm/repository/local 
+Creating /root/.helm/plugins 
+Creating /root/.helm/starters 
+Creating /root/.helm/cache/archive 
+Creating /root/.helm/repository/repositories.yaml 
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com 
+Adding local repo with URL: http://127.0.0.1:8879/charts 
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+Happy Helming!
+
+
+[root@master-01 kuber]# cd /root/.helm/repository
+[root@master-01 repository]# ls
+cache  local  repositories.yaml
+[root@master-01 repository]# cat repositories.yaml 
+apiVersion: v1
+generated: 2018-08-15T07:00:14.583005167Z
+repositories:
+- caFile: ""
+  cache: /root/.helm/repository/cache/stable-index.yaml
+  certFile: ""
+  keyFile: ""
+  name: stable
+  password: ""
+  url: https://kubernetes-charts.storage.googleapis.com
+  username: ""
+- caFile: ""
+  cache: /root/.helm/repository/cache/local-index.yaml
+  certFile: ""
+  keyFile: ""
+  name: local
+  password: ""
+  url: http://127.0.0.1:8879/charts
+  username: ""
+  
+  
+[root@master-01 repository]# kubectl create serviceaccount --namespace kube-system tiller
+serviceaccount/tiller created
+
+[root@master-01 repository]# kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+clusterrolebinding.rbac.authorization.k8s.io/tiller-cluster-rule created
+
+[root@master-01 repository]# kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+deployment.extensions/tiller-deploy patched
+
+[root@master-01 repository]# helm init --service-account tiller --upgrade
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been upgraded to the current version.
+Happy Helming!
+
+[root@master-01 repository]# kubectl get deployments -n kube-system
+NAME                   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+coredns                2         2         2            2           12m
+kubernetes-dashboard   1         1         1            1           8m
+tiller-deploy          1         1         1            1           4m
+
+
+[root@master-01 repository]# kubectl run hello-app --image=gcr.io/google-samples/hello-app:1.0 --port=8080
+deployment.apps/hello-app created
+
+
+[root@master-01 repository]# kubectl expose deployment hello-app
+service/hello-app exposed
+
+
+
+[root@master-01 repository]# helm install --name nginx-ingress stable/nginx-ingress --set rbac.create=true
+NAME:   nginx-ingress
+LAST DEPLOYED: Wed Aug 15 07:06:43 2018
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Service
+NAME                           TYPE          CLUSTER-IP     EXTERNAL-IP  PORT(S)                     AGE
+nginx-ingress-controller       LoadBalancer  10.106.229.32  <pending>    80:31945/TCP,443:31326/TCP  0s
+nginx-ingress-default-backend  ClusterIP     10.101.179.17  <none>       80/TCP                      0s
+
+==> v1beta1/Deployment
+NAME                           DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+nginx-ingress-controller       1        1        1           0          0s
+nginx-ingress-default-backend  1        1        1           0          0s
+
+==> v1beta1/PodDisruptionBudget
+NAME                           MIN AVAILABLE  MAX UNAVAILABLE  ALLOWED DISRUPTIONS  AGE
+nginx-ingress-controller       1              N/A              0                    0s
+nginx-ingress-default-backend  1              N/A              0                    0s
+
+==> v1/ServiceAccount
+NAME           SECRETS  AGE
+nginx-ingress  1        0s
+
+==> v1beta1/ClusterRole
+NAME           AGE
+nginx-ingress  0s
+
+==> v1beta1/Role
+nginx-ingress  0s
+
+==> v1beta1/RoleBinding
+NAME           AGE
+nginx-ingress  0s
+
+==> v1/Pod(related)
+NAME                                            READY  STATUS             RESTARTS  AGE
+nginx-ingress-controller-7cb5cdc6c9-jfqw4       0/1    ContainerCreating  0         0s
+nginx-ingress-default-backend-544cfb69fc-kq944  0/1    ContainerCreating  0         0s
+
+==> v1/ConfigMap
+NAME                      DATA  AGE
+nginx-ingress-controller  1     0s
+
+==> v1beta1/ClusterRoleBinding
+NAME           AGE
+nginx-ingress  0s
+
+
+NOTES:
+The nginx-ingress controller has been installed.
+It may take a few minutes for the LoadBalancer IP to be available.
+You can watch the status by running 'kubectl --namespace default get services -o wide -w nginx-ingress-controller'
+
+An example Ingress that makes use of the controller:
+
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    name: example
+    namespace: foo
+  spec:
+    rules:
+      - host: www.example.com
+        http:
+          paths:
+            - backend:
+                serviceName: exampleService
+                servicePort: 80
+              path: /
+    # This section is only required if TLS is to be enabled for the Ingress
+    tls:
+        - hosts:
+            - www.example.com
+          secretName: example-tls
+
+If TLS is enabled for the Ingress, a Secret containing the certificate and key must also be provided:
+
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: example-tls
+    namespace: foo
+  data:
+    tls.crt: <base64 encoded cert>
+    tls.key: <base64 encoded key>
+  type: kubernetes.io/tls
+  
+  
+
+
+  
