@@ -1,0 +1,962 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:13:45Z
+    generation: 1
+    labels:
+      run: hello-app
+    name: hello-app
+    namespace: default
+    resourceVersion: "4495"
+    selfLink: /apis/apps/v1/namespaces/default/deployments/hello-app
+    uid: 0c47227c-a427-11e8-96a0-42010a980075
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        run: hello-app
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          run: hello-app
+      spec:
+        containers:
+        - image: gcr.io/google-samples/hello-app:1.0
+          imagePullPolicy: IfNotPresent
+          name: hello-app
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: 2018-08-20T03:13:45Z
+      lastUpdateTime: 2018-08-20T03:13:45Z
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: 2018-08-20T03:13:45Z
+      lastUpdateTime: 2018-08-20T03:13:48Z
+      message: ReplicaSet "hello-app-54d5d8dc9b" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generation: 1
+    labels:
+      app: nginx-ingress
+      chart: nginx-ingress-0.20.1
+      component: controller
+      heritage: Tiller
+      release: nginx-ingress
+    name: nginx-ingress-controller
+    namespace: default
+    resourceVersion: "4967"
+    selfLink: /apis/apps/v1/namespaces/default/deployments/nginx-ingress-controller
+    uid: 83c59d4e-a427-11e8-96a0-42010a980075
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: nginx-ingress
+        component: controller
+        release: nginx-ingress
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: nginx-ingress
+          component: controller
+          release: nginx-ingress
+      spec:
+        containers:
+        - args:
+          - /nginx-ingress-controller
+          - --default-backend-service=default/nginx-ingress-default-backend
+          - --election-id=ingress-controller-leader
+          - --ingress-class=nginx
+          - --configmap=default/nginx-ingress-controller
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.14.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: nginx-ingress-controller
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          - containerPort: 443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: nginx-ingress
+        serviceAccountName: nginx-ingress
+        terminationGracePeriodSeconds: 60
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: 2018-08-20T03:17:05Z
+      lastUpdateTime: 2018-08-20T03:17:05Z
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: 2018-08-20T03:17:05Z
+      lastUpdateTime: 2018-08-20T03:17:29Z
+      message: ReplicaSet "nginx-ingress-controller-786dc4f648" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generation: 1
+    labels:
+      app: nginx-ingress
+      chart: nginx-ingress-0.20.1
+      component: default-backend
+      heritage: Tiller
+      release: nginx-ingress
+    name: nginx-ingress-default-backend
+    namespace: default
+    resourceVersion: "4944"
+    selfLink: /apis/apps/v1/namespaces/default/deployments/nginx-ingress-default-backend
+    uid: 83c7c7a4-a427-11e8-96a0-42010a980075
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: nginx-ingress
+        component: default-backend
+        release: nginx-ingress
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: nginx-ingress
+          component: default-backend
+          release: nginx-ingress
+      spec:
+        containers:
+        - image: k8s.gcr.io/defaultbackend:1.3
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: nginx-ingress-default-backend
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 60
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: 2018-08-20T03:17:05Z
+      lastUpdateTime: 2018-08-20T03:17:05Z
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: 2018-08-20T03:17:05Z
+      lastUpdateTime: 2018-08-20T03:17:21Z
+      message: ReplicaSet "nginx-ingress-default-backend-d676cbb5f" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:13:45Z
+    generation: 1
+    labels:
+      pod-template-hash: "1081848756"
+      run: hello-app
+    name: hello-app-54d5d8dc9b
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: hello-app
+      uid: 0c47227c-a427-11e8-96a0-42010a980075
+    resourceVersion: "4493"
+    selfLink: /apis/apps/v1/namespaces/default/replicasets/hello-app-54d5d8dc9b
+    uid: 0c487310-a427-11e8-96a0-42010a980075
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        pod-template-hash: "1081848756"
+        run: hello-app
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          pod-template-hash: "1081848756"
+          run: hello-app
+      spec:
+        containers:
+        - image: gcr.io/google-samples/hello-app:1.0
+          imagePullPolicy: IfNotPresent
+          name: hello-app
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generation: 1
+    labels:
+      app: nginx-ingress
+      component: controller
+      pod-template-hash: "3428709204"
+      release: nginx-ingress
+    name: nginx-ingress-controller-786dc4f648
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: nginx-ingress-controller
+      uid: 83c59d4e-a427-11e8-96a0-42010a980075
+    resourceVersion: "4964"
+    selfLink: /apis/apps/v1/namespaces/default/replicasets/nginx-ingress-controller-786dc4f648
+    uid: 83c8b735-a427-11e8-96a0-42010a980075
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: nginx-ingress
+        component: controller
+        pod-template-hash: "3428709204"
+        release: nginx-ingress
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: nginx-ingress
+          component: controller
+          pod-template-hash: "3428709204"
+          release: nginx-ingress
+      spec:
+        containers:
+        - args:
+          - /nginx-ingress-controller
+          - --default-backend-service=default/nginx-ingress-default-backend
+          - --election-id=ingress-controller-leader
+          - --ingress-class=nginx
+          - --configmap=default/nginx-ingress-controller
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.14.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: nginx-ingress-controller
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          - containerPort: 443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: nginx-ingress
+        serviceAccountName: nginx-ingress
+        terminationGracePeriodSeconds: 60
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generation: 1
+    labels:
+      app: nginx-ingress
+      component: default-backend
+      pod-template-hash: "823276619"
+      release: nginx-ingress
+    name: nginx-ingress-default-backend-d676cbb5f
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: nginx-ingress-default-backend
+      uid: 83c7c7a4-a427-11e8-96a0-42010a980075
+    resourceVersion: "4943"
+    selfLink: /apis/apps/v1/namespaces/default/replicasets/nginx-ingress-default-backend-d676cbb5f
+    uid: 83c8d9dc-a427-11e8-96a0-42010a980075
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: nginx-ingress
+        component: default-backend
+        pod-template-hash: "823276619"
+        release: nginx-ingress
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: nginx-ingress
+          component: default-backend
+          pod-template-hash: "823276619"
+          release: nginx-ingress
+      spec:
+        containers:
+        - image: k8s.gcr.io/defaultbackend:1.3
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: nginx-ingress-default-backend
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 60
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container
+        hello-app'
+    creationTimestamp: 2018-08-20T03:13:45Z
+    generateName: hello-app-54d5d8dc9b-
+    labels:
+      pod-template-hash: "1081848756"
+      run: hello-app
+    name: hello-app-54d5d8dc9b-tq9d6
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: hello-app-54d5d8dc9b
+      uid: 0c487310-a427-11e8-96a0-42010a980075
+    resourceVersion: "4492"
+    selfLink: /api/v1/namespaces/default/pods/hello-app-54d5d8dc9b-tq9d6
+    uid: 0c4adbf8-a427-11e8-96a0-42010a980075
+  spec:
+    containers:
+    - image: gcr.io/google-samples/hello-app:1.0
+      imagePullPolicy: IfNotPresent
+      name: hello-app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 100m
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-tnvlk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    nodeName: gke-oojiact-default-pool-3efb7166-hhfw
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-tnvlk
+      secret:
+        defaultMode: 420
+        secretName: default-token-tnvlk
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:13:45Z
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:13:48Z
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:13:45Z
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://dff75cf5a5eeef69af8779b13cd419476afa34b503cdef1c7c7d48579685fa07
+      image: gcr.io/google-samples/hello-app:1.0
+      imageID: docker-pullable://gcr.io/google-samples/hello-app@sha256:c62ead5b8c15c231f9e786250b07909daf6c266d0fcddd93fea882eb722c3be4
+      lastState: {}
+      name: hello-app
+      ready: true
+      restartCount: 0
+      state:
+        running:
+          startedAt: 2018-08-20T03:13:48Z
+    hostIP: 10.152.0.4
+    phase: Running
+    podIP: 10.36.1.9
+    qosClass: Burstable
+    startTime: 2018-08-20T03:13:45Z
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container
+        nginx-ingress-controller'
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generateName: nginx-ingress-controller-786dc4f648-
+    labels:
+      app: nginx-ingress
+      component: controller
+      pod-template-hash: "3428709204"
+      release: nginx-ingress
+    name: nginx-ingress-controller-786dc4f648-92fgx
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: nginx-ingress-controller-786dc4f648
+      uid: 83c8b735-a427-11e8-96a0-42010a980075
+    resourceVersion: "4963"
+    selfLink: /api/v1/namespaces/default/pods/nginx-ingress-controller-786dc4f648-92fgx
+    uid: 83cfcb3b-a427-11e8-96a0-42010a980075
+  spec:
+    containers:
+    - args:
+      - /nginx-ingress-controller
+      - --default-backend-service=default/nginx-ingress-default-backend
+      - --election-id=ingress-controller-leader
+      - --ingress-class=nginx
+      - --configmap=default/nginx-ingress-controller
+      env:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.14.0
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 10254
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: nginx-ingress-controller
+      ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+      - containerPort: 443
+        name: https
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 10254
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 100m
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: nginx-ingress-token-npx7h
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    nodeName: gke-oojiact-default-pool-3efb7166-hhfw
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: nginx-ingress
+    serviceAccountName: nginx-ingress
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: nginx-ingress-token-npx7h
+      secret:
+        defaultMode: 420
+        secretName: nginx-ingress-token-npx7h
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:05Z
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:29Z
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:05Z
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://dc4dbd38104c5502bdce8366c81d742bda281cd9906d7a5ecd2fcbc058e4af77
+      image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.14.0
+      imageID: docker-pullable://quay.io/kubernetes-ingress-controller/nginx-ingress-controller@sha256:4091d87c1f81fdd1036ddc96e2da725b1aeb37f26bb8bdd97e16a6ea4d2e1b14
+      lastState: {}
+      name: nginx-ingress-controller
+      ready: true
+      restartCount: 0
+      state:
+        running:
+          startedAt: 2018-08-20T03:17:19Z
+    hostIP: 10.152.0.4
+    phase: Running
+    podIP: 10.36.1.11
+    qosClass: Burstable
+    startTime: 2018-08-20T03:17:05Z
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container
+        nginx-ingress-default-backend'
+    creationTimestamp: 2018-08-20T03:17:05Z
+    generateName: nginx-ingress-default-backend-d676cbb5f-
+    labels:
+      app: nginx-ingress
+      component: default-backend
+      pod-template-hash: "823276619"
+      release: nginx-ingress
+    name: nginx-ingress-default-backend-d676cbb5f-27sl8
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: nginx-ingress-default-backend-d676cbb5f
+      uid: 83c8d9dc-a427-11e8-96a0-42010a980075
+    resourceVersion: "4940"
+    selfLink: /api/v1/namespaces/default/pods/nginx-ingress-default-backend-d676cbb5f-27sl8
+    uid: 83cf8d69-a427-11e8-96a0-42010a980075
+  spec:
+    containers:
+    - image: k8s.gcr.io/defaultbackend:1.3
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8080
+          scheme: HTTP
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 5
+      name: nginx-ingress-default-backend
+      ports:
+      - containerPort: 8080
+        name: http
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 100m
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-tnvlk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    nodeName: gke-oojiact-default-pool-3efb7166-hhfw
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 60
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-tnvlk
+      secret:
+        defaultMode: 420
+        secretName: default-token-tnvlk
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:05Z
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:21Z
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: 2018-08-20T03:17:05Z
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://2c7a6938732d041e288a175ac6dd12410789aca27d49097e2246afb08ffcd526
+      image: k8s.gcr.io/defaultbackend:1.3
+      imageID: docker-pullable://k8s.gcr.io/defaultbackend@sha256:fb91f9395ddf44df1ca3adf68b25dcbc269e5d08ba14a40de9abdedafacf93d4
+      lastState: {}
+      name: nginx-ingress-default-backend
+      ready: true
+      restartCount: 0
+      state:
+        running:
+          startedAt: 2018-08-20T03:17:21Z
+    hostIP: 10.152.0.4
+    phase: Running
+    podIP: 10.36.1.10
+    qosClass: Burstable
+    startTime: 2018-08-20T03:17:05Z
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: 2018-08-20T03:13:46Z
+    labels:
+      run: hello-app
+    name: hello-app
+    namespace: default
+    resourceVersion: "4484"
+    selfLink: /api/v1/namespaces/default/services/hello-app
+    uid: 0d205148-a427-11e8-96a0-42010a980075
+  spec:
+    clusterIP: 10.39.250.200
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      run: hello-app
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: 2018-08-20T02:38:41Z
+    labels:
+      component: apiserver
+      provider: kubernetes
+    name: kubernetes
+    namespace: default
+    resourceVersion: "6"
+    selfLink: /api/v1/namespaces/default/services/kubernetes
+    uid: 262f9714-a422-11e8-96a0-42010a980075
+  spec:
+    clusterIP: 10.39.240.1
+    ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: 2018-08-20T03:17:05Z
+    labels:
+      app: nginx-ingress
+      chart: nginx-ingress-0.20.1
+      component: controller
+      heritage: Tiller
+      release: nginx-ingress
+    name: nginx-ingress-controller
+    namespace: default
+    resourceVersion: "5002"
+    selfLink: /api/v1/namespaces/default/services/nginx-ingress-controller
+    uid: 83c316db-a427-11e8-96a0-42010a980075
+  spec:
+    clusterIP: 10.39.253.162
+    externalTrafficPolicy: Cluster
+    ports:
+    - name: http
+      nodePort: 31799
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      nodePort: 31677
+      port: 443
+      protocol: TCP
+      targetPort: https
+    selector:
+      app: nginx-ingress
+      component: controller
+      release: nginx-ingress
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 35.201.11.253
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: 2018-08-20T03:17:05Z
+    labels:
+      app: nginx-ingress
+      chart: nginx-ingress-0.20.1
+      component: default-backend
+      heritage: Tiller
+      release: nginx-ingress
+    name: nginx-ingress-default-backend
+    namespace: default
+    resourceVersion: "4878"
+    selfLink: /api/v1/namespaces/default/services/nginx-ingress-default-backend
+    uid: 83c48a50-a427-11e8-96a0-42010a980075
+  spec:
+    clusterIP: 10.39.244.140
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app: nginx-ingress
+      component: default-backend
+      release: nginx-ingress
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
