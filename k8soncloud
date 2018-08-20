@@ -1,0 +1,73 @@
+xxx@utility-ridge-xxx:~/kuber$ kubectl get pod -n kube-system
+NAME                                                READY     STATUS    RESTARTS   AGE
+event-exporter-v0.2.1-5f5b89fcc8-qp74v              2/2       Running   0          7m
+fluentd-gcp-scaler-7c5db745fc-p8gvg                 1/1       Running   0          7m
+fluentd-gcp-v3.1.0-47lbb                            2/2       Running   0          7m
+fluentd-gcp-v3.1.0-slj5g                            2/2       Running   0          7m
+fluentd-gcp-v3.1.0-v52r6                            2/2       Running   0          7m
+heapster-v1.5.3-58569f987c-4cwgt                    3/3       Running   0          6m
+kube-dns-788979dc8f-78l29                           4/4       Running   0          6m
+kube-dns-788979dc8f-mjwgc                           4/4       Running   0          7m
+kube-dns-autoscaler-79b4b844b9-2lfhn                1/1       Running   0          7m
+kube-proxy-gke-oojiact-default-pool-3efb7166-83k4   1/1       Running   0          7m
+kube-proxy-gke-oojiact-default-pool-3efb7166-h464   1/1       Running   0          7m
+kube-proxy-gke-oojiact-default-pool-3efb7166-hhfw   1/1       Running   0          7m
+kubernetes-dashboard-56d4f774fd-khr6c               1/1       Running   0          29s
+l7-default-backend-5d5b9874d5-xcs8n                 1/1       Running   0          7m
+metrics-server-v0.2.1-7486f5bd67-m9klz              2/2       Running   0          6m
+
+
+
+after deploy app and ingress 
+
+naronglit_48@utility-ridge-206508:~/kuber$ kubectl get pod -n kube-system
+NAME                                                READY     STATUS    RESTARTS   AGE
+event-exporter-v0.2.1-5f5b89fcc8-qp74v              2/2       Running   0          42m
+fluentd-gcp-scaler-7c5db745fc-p8gvg                 1/1       Running   0          42m
+fluentd-gcp-v3.1.0-47lbb                            2/2       Running   0          42m
+fluentd-gcp-v3.1.0-slj5g                            2/2       Running   0          42m
+fluentd-gcp-v3.1.0-v52r6                            2/2       Running   0          42m
+heapster-v1.5.3-58569f987c-4cwgt                    3/3       Running   0          41m
+kube-dns-788979dc8f-78l29                           4/4       Running   0          41m
+kube-dns-788979dc8f-mjwgc                           4/4       Running   0          42m
+kube-dns-autoscaler-79b4b844b9-2lfhn                1/1       Running   0          42m
+kube-proxy-gke-oojiact-default-pool-3efb7166-83k4   1/1       Running   0          42m
+kube-proxy-gke-oojiact-default-pool-3efb7166-h464   1/1       Running   0          42m
+kube-proxy-gke-oojiact-default-pool-3efb7166-hhfw   1/1       Running   0          42m
+kubernetes-dashboard-56d4f774fd-khr6c               1/1       Running   0          35m
+l7-default-backend-5d5b9874d5-xcs8n                 1/1       Running   0          42m
+metrics-server-v0.2.1-7486f5bd67-m9klz              2/2       Running   0          41m
+tiller-deploy-895d57dd9-s4d2t                       1/1       Running   0          7m
+
+
+
+xxxx@utility-ridge-xxx:~/kuber$ kubectl get pod
+NAME                                            READY     STATUS    RESTARTS   AGE
+hello-app-54d5d8dc9b-tq9d6                      1/1       Running   0          9m
+nginx-ingress-controller-786dc4f648-92fgx       1/1       Running   0          5m
+nginx-ingress-default-backend-d676cbb5f-27sl8   1/1       Running   0          5m
+
+
+xxx@utility-ridge-xxx:~/kuber$ kubectl get svc
+NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+hello-app                       ClusterIP      10.39.250.200   <none>          8080/TCP                     11m
+kubernetes                      ClusterIP      10.39.240.1     <none>          443/TCP                      46m
+nginx-ingress-controller        LoadBalancer   10.39.253.162   35.201.11.253   80:31799/TCP,443:31677/TCP   8m
+nginx-ingress-default-backend   ClusterIP      10.39.244.140   <none>          80/TCP                       8m
+
+
+xxx@utility-ridge-xxx:~/kuber$ kubectl get ing
+NAME               HOSTS     ADDRESS       PORTS     AGE
+ingress-resource   *         35.189.28.7   80        11m
+
+
+naronglit_48@utility-ridge-206508:~/kuber$ kubectl get deployment
+NAME                            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+hello-app                       1         1         1            1           13m
+nginx-ingress-controller        1         1         1            1           9m
+nginx-ingress-default-backend   1         1         1            1           9m
+
+
+
+
+
