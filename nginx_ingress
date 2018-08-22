@@ -7,6 +7,10 @@ https://cloud.google.com/community/tutorials/nginx-ingress-gke
 refer 
 https://akomljen.com/kubernetes-nginx-ingress-controller/
 
+static ip ingress
+
+https://github.com/cgrant/global-k8s-ingress-with-gce-controller
+
 
 
 Kubernetes Nginx Ingress Controller
