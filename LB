@@ -10,3 +10,4 @@ the L4 TCP/UDP connection/session. Thus the load balancer roughly shuffles bytes
 and makes sure that bytes from the same session wind up at the same backend. The L4 load balancer 
 is unaware of any application details of the bytes that it is shuffling. The bytes could be HTTP, Redis, 
 MongoDB, or any other application protocol.
+fG-g$)-9tjpnHfq*qKG=dpTXeGldLvA2
